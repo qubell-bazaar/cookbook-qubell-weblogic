@@ -14,13 +14,16 @@ package "unzip"
 package "bc"
 package "python-setuptools"
 package "libaio"
-package "dejavu-fonts-common"
-package "dejavu-serif-fonts"
-package "dejavu-sans-mono-fonts"
-package "dejavu-lgc-sans-fonts"
-package "dejavu-sans-fonts"
-package "dejavu-lgc-serif-fonts"
-package "dejavu-lgc-sans-mono-fonts"
+case node[:platform]
+  when "centos"
+    package "dejavu-fonts-common"
+    package "dejavu-serif-fonts"
+    package "dejavu-sans-mono-fonts"
+    package "dejavu-lgc-sans-fonts"
+    package "dejavu-sans-fonts"
+    package "dejavu-lgc-serif-fonts"
+    package "dejavu-lgc-sans-mono-fonts"
+  end
 
 case node["platform_family"]
   when "rhel"

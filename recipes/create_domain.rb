@@ -25,8 +25,13 @@ if node[:weblogic][:password].nil?
 end
 
 directory domain_dir do
-  owner 'root'
-  group 'root'
+  case node[:platform_family]
+    when "rhel", "debian"
+      owner 'root'
+      group 'root'
+    when "windows"
+      owner 'Administrator'
+  end
   mode 00755
   action :create
   recursive true
@@ -34,38 +39,46 @@ end
 
 template "#{node[:weblogic][:tmp_path]}/create_#{node[:weblogic][:domain_name]}_domain.py" do
   source "wlst/create_domain.py.erb"
-  owner "root"
-  group "root"
+  case node[:platform_family]
+    when "rhel", "debian"
+      owner "root"
+      group "root"
+    when "windows"
+      owner "Administrator"
+  end
   mode "0644"
 end
 
 wlst_script "Creating #{node[:weblogic][:domain_name]} domain" do
   script "#{node[:weblogic][:tmp_path]}/create_#{node[:weblogic][:domain_name]}_domain.py"
-  log "/tmp/create_domain.log"
+  log "#{node[:weblogic][:tmp_path]}/create_domain.log"
 end
 
 wlst_script "Starting Weblogic NodeManager" do
   script "#{node[:weblogic][:manage_scripts_path]}/start_node_manager.py"
-  log "/tmp/start_node_manager.log"
+  log "#{node[:weblogic][:tmp_path]}/start_node_manager.log"
 end
 
 wlst_script "Starting Weblogic AdminServer" do
   script "#{node[:weblogic][:manage_scripts_path]}/start_admin_server.py"
-  log "/tmp/start_admin_server.log"
+  log "#{node[:weblogic][:tmp_path]}/start_admin_server.log"
 end
 
-bash "Waiting for #{node[:weblogic][:domain_name]} domain deployment" do
-  user 'root'
-  code <<-EOH
-  while [ "`curl -s -w "%{http_code}" "http://localhost:7001/console" -o /dev/null`" == "000" ];
-  do
-    sleep 10
-  done
-  if [ "`curl -s -w "%{http_code}" "http://localhost:7001/console" -o /dev/null`" == "200" ];
-  then
-    exit 0
-  else
-    exit 1
-  fi
-  EOH
+case node[:platform_family]
+  when "rhel", "debian"
+    bash "Waiting for #{node[:weblogic][:domain_name]} domain deployment" do
+      user 'root'
+      code <<-EOH
+      while [ "`curl -s -w "%{http_code}" "http://localhost:7001/console" -o /dev/null`" == "000" ];
+      do
+        sleep 10
+      done
+      if [ "`curl -s -w "%{http_code}" "http://localhost:7001/console" -o /dev/null`" == "200" ];
+      then
+        exit 0
+      else
+        exit 1
+      fi
+      EOH
+    end
 end

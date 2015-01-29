@@ -1,10 +1,22 @@
+include_attribute "java"
+
 default[:weblogic][:binary_url] = nil
-default[:weblogic][:tmp_path] = "/tmp"
-default[:weblogic][:bea_home] = "/opt/middleware"
-default[:weblogic][:java_home] = "/usr/lib/jvm/java"
-default[:weblogic][:jrockit_home] = "#{node[:weblogic][:bea_home]}/jrockit"
-default[:weblogic][:weblogic_home] = "#{node[:weblogic][:bea_home]}/weblogic"
-default[:weblogic][:domain_home] = "#{node[:weblogic][:bea_home]}/user_domains"
+case node[:platform_family]
+  when "windows"
+    default[:weblogic][:tmp_path] = "Z:\\tmp"
+    default[:weblogic][:bea_home] = "Z:\\middleware"
+    default[:weblogic][:weblogic_home] = "#{node[:weblogic][:bea_home]}\\weblogic"
+    set[:java][:install_flavor] = "windows"
+    set[:java][:java_home] = "C:\\Program\ Files\\Java\\jdk"
+    default[:weblogic][:java_home] = node[:java][:java_home]
+  when "rhel", "debian"
+    default[:weblogic][:tmp_path] = "/tmp"
+    default[:weblogic][:bea_home] = "/opt/middleware"
+    default[:weblogic][:java_home] = "/usr/lib/jvm/java"
+    default[:weblogic][:jrockit_home] = "#{node[:weblogic][:bea_home]}/jrockit"
+    default[:weblogic][:weblogic_home] = "#{node[:weblogic][:bea_home]}/weblogic"
+    default[:weblogic][:domain_home] = "#{node[:weblogic][:bea_home]}/user_domains"
+end
 #fix set name
 if ( ! node[:weblogic][:domain_name].nil?)
   default[:weblogic][:domain_name] = node[:weblogic][:domain_name]

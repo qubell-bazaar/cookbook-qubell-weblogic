@@ -80,5 +80,3 @@ file "#{node[:weblogic][:tmp_path]}/weblogic_x86_64.jar" do
 	group "root"
 	mode "0644"
 end
-
-include_recipe "weblogic::create_domain"

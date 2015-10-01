@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
   <bea-installer> 
   <input-fields>
-    <% @options.each do |name, value| %>
-      <data-value name="<%= name %>" value="<%= value %>" />
-    <% end %>
+    <data-value name="BEAHOME" value="<%= @middleware_home %>" />
+    <data-value name="WLS_INSTALL_DIR" value="<%= @weblogic_home %>" />
+    <data-value name="COMPONENT_PATHS" value="WebLogic Server/Core Application Server|WebLogic Server/Administration Console|WebLogic Server/Configuration Wizard and Upgrade Framework|WebLogic Server/Web 2.0 HTTP Pub-Sub Server|WebLogic Server/WebLogic JDBC Drivers|WebLogic Server/Third Party JDBC Drivers|WebLogic Server/WebLogic Server Clients|WebLogic Server/WebLogic Web Server Plugins|WebLogic Server/UDDI and Xquery Support|WebLogic Server/Server Examples|WebLogic Server/Evaluation Database|WebLogic Server/Workshop Code Completion Support|Oracle Configuration Manager/Data Collector|Oracle Coherence/Coherence Product Files|Common Infrastructure Engineering/Uninstall|Common Infrastructure Engineering/Patch Client|Common Infrastructure Engineering/Patch Attachment Facility|Common Infrastructure Engineering/Clone Facility" />
   </input-fields> 
 </bea-installer>

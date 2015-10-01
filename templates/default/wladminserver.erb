@@ -1,0 +1,106 @@
+#!/bin/sh
+#
+# wlnodemanager Oracle Weblogic AdminServer
+#
+# chkconfig:   345 86 14
+# description: Oracle Weblogic service
+
+### BEGIN INIT INFO
+# Provides: wlnodemanager
+# Required-Start: $network $local_fs
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start: 3 4 5
+# Default-Stop: 0 1 2 6
+# Short-Description: Oracle Weblogic service.
+# Description: Starts and stops Oracle Weblogic AdminServer
+### END INIT INFO
+
+. /etc/rc.d/init.d/functions
+
+DOMAIN_HOME="<%= node[:weblogic][:domain_home] %>/<%= node[:weblogic][:domain_name] %>"
+WLS_HOME="<%= node[:weblogic][:weblogic_home] %>"
+SERVER_NAME="AdminServer"
+DAEMON_USER="oracle"
+PROCESS_STRING="^.*-DAdminServer=true.*"
+
+SERVICE_NAME=`/bin/basename $0`
+LOCKFILE="/var/lock/subsys/${SERVICE_NAME}"
+
+RETVAL=0
+
+startAdminServer(){
+  echo 'Starting WebLogic AdminServer.'
+  /bin/su ${DAEMON_USER} -c "mkdir -p ${DOMAIN_HOME}/servers/${SERVER_NAME}/logs"
+  /bin/su ${DAEMON_USER} -c "${WLS_HOME}/common/bin/wlst.sh ${DOMAIN_HOME}/startAdminServer.py &> ${DOMAIN_HOME}/servers/${SERVER_NAME}/logs/startup.log"
+}
+
+stopAdminServer(){
+  echo 'Stopping Weblogic AdminServer.'
+  /bin/su ${DAEMON_USER} -c "${WLS_HOME}/common/bin/wlst.sh ${DOMAIN_HOME}/stopAdminServer.py &> ${DOMAIN_HOME}/servers/${SERVER_NAME}/logs/startup.log"
+}
+
+start() {
+  OLDPID=`/usr/bin/pgrep -f ${PROCESS_STRING}`
+  if [ ! -z "$OLDPID" ]; then
+    echo '${SERVICE_NAME} is already running (pid ${OLDPID}) !'
+    exit
+  fi
+  startAdminServer
+  RETVAL=$?
+  echo
+  [ "$RETVAL" -eq 0 ] && touch ${LOCKFILE}
+  return ${RETVAL}
+}
+
+stop() {
+  stopAdminServer
+  RETVAL=$?
+
+  OLDPID=`/usr/bin/pgrep -f ${PROCESS_STRING}`
+  if [ "$OLDPID" != "" ]; then
+    kill -TERM ${OLDPID}
+  else
+    echo "${SERVICE_NAME} is stopped"
+  fi
+
+  [ "$RETVAL" -eq 0 ] && rm -f ${LOCKFILE}
+  return ${RETVAL}
+}
+
+restart() {
+        stop
+        sleep 10
+        start
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart|force-reload|reload)
+        restart
+        ;;
+  condrestart|try-restart)
+        [ -f ${LOCKFILE} ] && restart
+        ;;
+  status)
+        OLDPID=`/usr/bin/pgrep -f ${PROCESS_STRING}`
+        if [ "${OLDPID}" != "" ]; then
+            /bin/echo "${SERVICE_NAME} is running (pid: ${OLDPID})"
+            RETVAL=0
+        else
+            /bin/echo "${SERVICE_NAME} is stopped"
+            RETVAL=1
+        fi
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|status|restart|reload|force-reload|condrestart}"
+        exit 1
+esac
+
+exit ${RETVAL}

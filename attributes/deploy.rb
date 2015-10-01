@@ -1,0 +1,1 @@
+default[:weblogic][:artifacts] = []

@@ -1,42 +1,25 @@
-require 'chef/resource'
+require 'chef/resource/script'
 
 class Chef
-	class Resource
-		class WlstScript < Chef::Resource
-			def initialize(name, run_context=nil)
-				super
-				@resource_name = :wlst_script
-				@allowed_actions.push(:run)
-		    	@action = :run
-		    	@log = "/dev/null"
-				@provider = Chef::Provider::WlstScript
-			end
+  class Resource
+    class Wlst < Chef::Resource::Script
 
-			def script(arg=nil)
-				set_or_return(
-				  :script,
-				  arg,
-				  :kind_of => String,
-				  :required => true
-				)
-			end
+      def initialize(name, run_context=nil)
+        super
+        @resource_name = :wlst
+        #@flags = "-i"
+        @provider = Chef::Provider::Wlst
+      end
 
-			def log(arg=nil)
-				set_or_return(
-				  :log,
-				  arg,
-				  :kind_of => String
-				)
-			end
+      def weblogic_home(arg=nil)
+        set_or_return(
+          :weblogic_home,
+          arg,
+          :kind_of => String,
+          :required => true
+        )
+      end
 
-			def environment(arg=nil)
-				set_or_return(
-					:environment,
-					arg,
-					:kind_of => Hash,
-					:default => { }
-				)
-			end
-		end
-	end
+    end
+  end
 end

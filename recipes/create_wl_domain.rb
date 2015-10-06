@@ -91,6 +91,18 @@ when "rhel"
     action [ :enable, :start ]
   end
 else
+  # Recreate SSL key
+  bash "recreate SSL key (NodeManager)" do
+    cwd "/tmp"
+    user "oracle"
+    group "oinstall"
+    code <<-END
+      source #{::File.join(node[:weblogic][:weblogic_home], "server", "bin", "setWLSEnv.sh")}
+      java utils.CertGen -keyfilepass DemoIdentityPassPhrase -certfile newcert -keyfile newkey
+      java utils.ImportPrivateKey -keystore DemoIdentity.jks -storepass DemoIdentityKeyStorePassPhrase -keyfile newkey.pem -keyfilepass DemoIdentityPassPhrase -certfile newcert.pem -alias demoidentity
+      mv -f DemoIdentity.jks #{::File.join(node[:weblogic][:domain_home], node[:weblogic][:domain_name], "security")}
+    END
+  end
   # Universal method, does not survive reboot
   wlst "start NodeManager" do
     creates ::File.join(nodemanager_home, "nodemanager.log.lck")

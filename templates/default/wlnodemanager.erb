@@ -30,6 +30,15 @@ LOCKFILE="${NM_HOME}/nodemanager.log.lck"
 
 RETVAL=0
 
+recreateCert(){
+  pushd /tmp
+  source $WLS_HOME/server/bin/setWLSEnv.sh
+  java utils.CertGen -keyfilepass DemoIdentityPassPhrase -certfile newcert -keyfile newkey
+  java utils.ImportPrivateKey -keystore DemoIdentity.jks -storepass DemoIdentityKeyStorePassPhrase -keyfile newkey.pem -keyfilepass DemoIdentityPassPhrase -certfile newcert.pem -alias demoidentity
+  mv -f DemoIdentity.jks $DOMAIN_HOME/security
+  popd
+}
+
 startNodeManager(){
   echo 'Starting WebLogic NodeManager.'
   /bin/su ${DAEMON_USER} -c "${WLS_HOME}/common/bin/wlst.sh ${DOMAIN_HOME}/startNodeManager.py &> ${NM_HOME}/startup.log"
@@ -46,6 +55,8 @@ start() {
     echo '${SERVICE_NAME} is already running (pid ${OLDPID}) !'
     exit
   fi
+  echo 'Updating SSL certificate'
+  recreateCert
   startNodeManager
   RETVAL=$?
   echo
